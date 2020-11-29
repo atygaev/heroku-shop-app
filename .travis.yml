@@ -1,0 +1,32 @@
+    dist: trusty
+    jdk: oraclejdk8
+    language: java
+    services:
+      - postgresql
+      - docker
+    env:
+      global:
+        - secure: "S9WebDmI2/5fWXeD6B/FyAA233vS3zPHFkZ0N9FRVpqXP5OFc45iy2TRJfEdT9vn53Lm0Nsaoe/2RzpmjN4w4Lxu985YNz2GypgxZP2o0c7sSuo4botCiB+gt6fmGDC3PpJiJi0McQZwJ5pkSmpjYjwZCgESVuoqjuK+8UzkgdQQMnzsH78w0aFn+ExGBYXr81llo6xcw8NgDuR9chKgXnwpkW5QgExtkkvGZoPdgElz0BUTV2/r0NgDxQUfAksKLdjcSbGdhjZnLTTLqrCf6CDRzllYLGk8sb5Fnu8nVZiwEe/nnwFen3XY3E+OTc9pf093Q0TEq63UfanJeHF2fVb7uWL9LkMnAL7uikh6u446cbBxfQMt5DkeZRWZitaJxFq/jfGG3YzIpXn3B3BjfUVR5BZmQEo0FdWrS4EPYnmWv7PJFh8QzV0VWJKaKDe09ZBAiOPCm8BbXScgsjdyBOuAmYx7rf4ZlwWxeEO2W0FyiLjcCIS8k+xdNxAED9WgG8kaOCCnW8c72SwBnjDDh/CkaUmw9zhh1WQ4QkmYW8227rZGs/p9mKgvHYG3kvntodg31nXCZy5dWqocFUkwIMsR8+R9yMKGmNr5iFzgWvwELGlzieXhRCFfRujwRcv00yqvb9Bg86hkn5w06hNilo5S8b2jvUCkAXjBgG+L0v4="
+        - secure: "FTCdM04ubzC2MK67CyLCoxxNIb+PN0I+TjP+LeK7rtnHqPAmEDsQNHYsBMr8CR+taJruRPuzJcVK8ZujCL0YWRonDNJkVqDS3kEaDOZxLBZovYZ4QzXPWQJy5KNeotU07Ix6lHe14gvSvrZS9vAnogkspp3X/MKY6v1NKfbOuqjBPdd/XnKKTy8HQ0ahZyY0+RdLJRtmL/4gcEioyRuTtQpCrH8NC5UseCbk9y3025g6ZBusEwlxzsZFGj4QuGmbUvrGu+wl6Av9w8c3iIDB1ZvIDYs0PzI1W7zQJ3bh09KtYiEDXAfXnw6IEWBCBCGTw6mAZZttwDmRnuo5E4jjfjAkqmdiND9Gys2nfjR9OTxSL8LhkVg6Ucg4g5iQJ/wrqsLuKv5MACwj6myjl/PQn6Hmeom+5ZBCglVVQyIHmpgdz7BOT1vUlxqgre1ATzskX93hnHZ1jznuTRHkwNV2t+a46ozZnIP0fEhHJy9pt8U+cBEJCKWbD1B8oXPP0DxCyOlowgZE2JlraRsZByQ0okX0+eLzDy5SVyNeq/WZpo6qDK0hkmjAqPP93QTsFCLCj1tqce9qIYrW7blsLmsHTqLaT+3gGXtzzD7DzT/Lr9zL0jbKAlqjD1kuiczeKfiShyPxMi8XE45GBLsbtnQ+CwXlWgoZozWkRCLWc3Y7SK0="
+        - secure: "uyqP4JcDiTCLYeXy+pFaOT/s3pu5ya1ss4P5yAHGO7roFtfqe0dfzQU+cESd630U79hGf4Z+kjhYJrfkmQJaelYDyjjabm7bXjfyVE8v+6PVVCCUk8Fwt8HMNCoy3JFXAjAAsa7sXJ869mRB9d3II5NNd1nlvmdErmEotcpZfFW2N20FXTiFA3QeV6tFDWzNhV9nY50vPbKFjRcL/CT0dLcwKEaC+LkCZOd6r9x+1Rw2B0JqMFGwV4aoYbAgOU5edkScLTU/7NjTg4M1ULcafKKwNPPb5NNvD4umn/6zbGnvjKO6Mt8fKz29jzR0UtRkXyErfYETGRl4k5lqKCTj5+zFtXPhXEKSwCT2JyzrFAQjd1cJht5w7QN2T3RBez8M0+w9DgTgPabHWJiAeH3QAsyUhHKzeKTOzkuR1sa4Rv5bI8JHQyCkSZ0VlPb8rv7gg77eBlaQ9juvthBNT9LnAWNii6TVavt3JR6hGWFAtVIWy4TOK2oGiOJaanaJF6/9Kl0HWg+D/I+HLSfeIyB13HYTGJuqcO9kz0uP6qsd/DUreTmt8BVorQTt9mlU5dPayy4wlfUZH6Zc9P371ZOZNuP65Tweh2RU+YSerO3BfwGK3PPD0WDVlBS276kK3b09jSucIIh0o0W9tKt/jRVNRwLFO06rYK/NqCq64cxYnQo="
+        - COMMIT=${TRAVIS_COMMIT::7}
+
+    before_script:
+      - psql -c "CREATE DATABASE myshopdb;" -U postgres
+      - psql -c "CREATE USER root WITH PASSWORD 'root';" -U postgres
+
+    script:
+      - ./mvnw clean install -B
+    
+    after_success:
+      - docker login -u $DOCKER_USER -p $DOCKER_PASS
+      - export TAG=`if [ "$TRAVIS_BRANCH" == "master" ]; then echo "latest"; else echo "$TRAVIS_BRANCH"; fi`
+      - export IMAGE_NAME=atygaev/vova-shop
+      - docker build -t $IMAGE_NAME:latest .
+      - docker tag $IMAGE_NAME:latest $IMAGE_NAME:$TAG
+      - docker push $IMAGE_NAME:$TAG
+    
+    deploy:
+      provider: heroku
+      api_key: $HEROKU_API_KEY
+      app: vova-shop
